@@ -58,9 +58,3 @@ results/results.csv       one row per real run
 results/runs.md           links to every Actions run, PR and review
 results/collect.py        regenerates the two files above from GitHub
 ```
-
-## AI use
-This assignment was built with substantial help from Claude Code (Claude Opus 5.5): it drafted the ADRs and
-views from design decisions discussed with me, wrote the harness/workflow code, and the collection script.
-I reviewed the generated material. All runs, PRs and reviews linked in `results/runs.md` are real
-GitHub Actions executions on the fork.
