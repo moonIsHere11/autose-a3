@@ -1,0 +1,6 @@
+seeded_pr,pr_number,issue,ground_truth,expected_category,defect,hidden_tests_on_pr,existing_suite_on_pr
+S1,6,1,defective,approach,"Makes every OR query non-cacheable (hash None) instead of fixing the hash tag: hides the bug, disables the query cache for OR, violates ARCHITECTURE.md ADR-2",2/4 fail,228 pass
+S2,7,2,defective,code,"Resets the write counter before calling flush(); flush() then sees 0 and never writes -> data never reaches storage (data loss)",1/4 fail,2 fail
+S3,8,3,defective,code,"between() uses exclusive bounds (low < v < high); issue asks for inclusive",4/4 fail,228 pass
+S4,9,1,correct,-,"Correct fix: OR combinator uses the 'or' tag in its hash",4/4 pass,228 pass
+S5,10,5,defective,code,"Shallow dict copy: top-level mutation fixed, but mutating a nested list/dict in a result still corrupts the cache",1/4 fail,228 pass

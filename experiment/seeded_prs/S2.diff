@@ -1,0 +1,12 @@
+diff --git a/tinydb/middlewares.py b/tinydb/middlewares.py
+index 104de4b..3d5c8c9 100644
+--- a/tinydb/middlewares.py
++++ b/tinydb/middlewares.py
+@@ -115,6 +115,7 @@ class CachingMiddleware(Middleware):
+ 
+         # Check if we need to flush the cache
+         if self._cache_modified_count >= self.WRITE_CACHE_SIZE:
++            self._cache_modified_count = 0
+             self.flush()
+ 
+     def flush(self):
