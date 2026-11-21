@@ -15,7 +15,7 @@ run_id,url,mode,variant,issue,issue_kind,seeded,pr,requirements,design,implement
 44921915844,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44921915844,pipeline,full,2,bug,,12,True,True,True,True,,success,approve,0,5,,,4 passed,82611,4231,success
 44921921389,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44921921389,pipeline,full,3,feature,,13,True,True,True,True,,success,,0,0,,,4 passed,266928,9578,failure
 44921926432,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44921926432,pipeline,full,4,feature,,14,True,True,True,True,,success,approve,0,12,,,4 passed,232480,8854,success
-44921931884,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44921931884,pipeline,full,5,vague,,,True,True,False,,testing,success,,0,0,,,,151516,7976,success
+44921931884,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44921931884,pipeline,full,5,vague,,,True,True,False,,testing,not_released,,0,0,,,,151516,7976,success
 44924437059,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44924437059,pipeline,full,1,bug,,11,True,True,True,True,,success,changes_requested,1,1,implementation,approve,4 passed,143663,14557,success
 44924465704,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44924465704,pipeline,full,3,feature,,13,True,True,True,True,,success,approve,0,6,,,4 passed,406451,16900,success
 44924483558,https://github.com/moonIsHere11/tinydb-autose/actions/runs/44924483558,review-only,full,5,vague,S5,10,,,,,,skipped,approve,0,7,,,,17264,819,success

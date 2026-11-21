@@ -1,6 +1,7 @@
 # Decision experiments: what each variant changes
 
-Two ADRs are tested. Each experiment changes exactly one decision and keeps everything else
+Two ADRs are tested. The intent was for each experiment to change exactly one decision (E1 in practice changes the
+whole bundle of ADR-008 choices at once; see the caveats in the report) and keep everything else
 (fork commit, issues, models for the other roles, budgets) fixed.
 
 ## E1: tests ADR-008 (reviewer independence)

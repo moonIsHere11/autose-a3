@@ -76,7 +76,7 @@ Table: All ADRs (full text in `architecture/decisions/`).
 | 005 | D5 Tools | Own harness, per-role allowlists, `docker --network none` sandbox, gh/REST only in deterministic steps | GitHub MCP server for agents | The LLM never needs GitHub or a credential | Accepted |
 | 006 | D6 Models | gemma-4-31b-it workers, gemini-3-flash-preview reviewer | Same model for all roles | Uncorrelated reviewer errors within a free-tier budget | Superseded by 011 |
 | 007 | D7 Checks | Code-decided gates; red-on-base / green-on-head tests | LLM judge per stage | Vacuous tests and self-certification are rejected mechanically | Accepted |
-| 008 | D8 Reviewer independence | Separate job + different model + withheld artifacts + evidence gate | Same job with a new prompt | Independence of process, inputs, model, permissions and incentive | Accepted |
+| 008 | D8 Reviewer independence | Separate job + different model + withheld artifacts + evidence gate | Same job with a new prompt | Independence of process, inputs, model, permissions and incentive | Accepted; amended by 012 |
 | 009 | D9 Safety and failures | Quarantine, no credentials in sandbox, budgets, structural bounds | Prompt-only defence | Injection can at worst produce a bad diff on a branch | Accepted |
 | 010 | D10 Triggers | Label or `/autose` by write-permission users; per-issue queued concurrency | `issues: opened` for everyone | Only people who could push can spend the budget | Accepted |
 | 011 | D6 Models (revised) | gemini-3.5-flash-lite workers (Gemma fallback), gemini-3-flash-preview reviewer | Keep Gemma workers with longer timeouts | Measured 503s and ~20 s/call made runs infeasible | Accepted |
@@ -133,7 +133,7 @@ sandbox. A defect counts as *identified* only if a finding names the actual defe
 | S3 #8 (code: exclusive bounds) | exact defect with probe (6 cmds), but **no `verdict:` line** -> `invalid` | changes requested for the **wrong reason** ("missing unit tests") |
 | S4 #9 (correct control) | approve (3 cmds); first attempt approved with 0 cmds -> rejected by gate | approve |
 | S5 #10 (code: shallow copy, nested leak) | changes requested, exact defect, but evidence **hollow** (only ran pytest) | approve (ran pytest) |
-| **Defects identified** | **3/4** (2/4 with a valid verdict) | **0/4** |
+| **Defects identified** | **3/4 named; 2/4 with a valid verdict** (S5 label contested) | **0/4** |
 | False rejections (S4) | 0/1 | 0/1 |
 | Mean commands executed | 3.2 | 0.4 |
 
@@ -144,6 +144,15 @@ and it **approved**, missing the nested-copy defect that the primary model had f
 (nothing ungrounded was kept), but the outcome was decided by the *model*. That is a confound for ADR-012, and
 direct evidence for ADR-011's claim that reviewer strength, not just reviewer independence, is what catches subtle
 defects.
+
+*Caveats on E1.* (1) The variants differ in **five** factors at once (model, inputs including a PR description that
+falsely claims "all existing tests pass", prompt, adversarial mandate, evidence gate), not one, despite `variants.md`'s
+intent; E1 measures the *bundle* of ADR-008 choices, not independence alone. (2) The full reviewer prompt names
+probe areas (query hashes, middleware write counting, nested fields) that overlap the seeded defect classes.
+(3) **S5's label is contested:** the upstream test `test_query_cache_documents_are_shared_with_cache` pins nested
+sharing as documented behaviour (the same test that made I5 stop), so "nested mutation leaks" is arguably the contract,
+not a defect. Counting S5 as not-a-defect, the full reviewer's tally is 2/3 named, 1/3 with a valid verdict.
+Under the final ADR-012 system (S5 re-test) the result is S2 caught, S3 no valid verdict, S1 and S5 missed.
 
 *Reading.* Independence plus the adversarial mandate made the difference between finding defects and rubber-stamping:
 the naive reviewer approved a PR whose own branch fails the existing suite, on the author's word that "all existing
@@ -189,12 +198,13 @@ runs, all on GitHub Actions. Per-run data is in `results/results.csv`, with link
 |---|---|---|---|
 | 1 Requirements | 5/5 | 4/5 | I3: fuzzy word "correctly" in a *Then* clause; Analyst rewrote it |
 | 2 Design | 5/5 | 4/5 | I5: Changes table named a non-existent symbol `(module)` |
-| 3 Implementation | 5/5 | 5/5 | (each attempt compiled, imported and type-checked) |
+| 3 Implementation | 4/5 | 5/5 | every attempt compiled, imported and type-checked; I5 exhausted its budget (6 attempts + 1 redesign) because the full suite stayed red |
 | 4 Testing | **4/5** | 2/5 | I3: 3 AC tests red on head, so back to Builder (fixed); I4: test file not written, Tester redone; **I5: stopped**, see below |
-| 5 Release | 4/4 | 4/4 | PR opened, pytest + mypy on head green, status `autose/ci` posted |
-| 6 Review | 4/4 approved | 3/4 | I1 (fresh run) took both rounds: review 1 requested changes, rework re-entered at *implementation*, review 2 approved |
+| 5 Release | 4/4 (I5 not released) | 4/4 | PR opened, pytest + mypy on head green, status `autose/ci` posted |
+| 6 Review | first runs: 2/4 approved (I2, I4) | 2/4 | I1: changes requested (false positive), then rework crashed on the restart bug; I3: review crashed (quota). Fresh re-runs: I3 approved; I1 took both rounds (rework re-entered at *implementation*, review 2 approved) |
 
-**Hidden acceptance tests on the final PR branches: I1 4/4, I2 4/4, I3 4/4, I4 4/4, so 16/16.** I5 produced no PR.
+**Hidden acceptance tests on the final PR branches: I1 4/4, I2 4/4, I3 4/4, I4 4/4, so 16/16.** Passing the hidden tests
+does not make every PR correct: **PR #13 (I3) contains an unrequested, breaking change** (below). I5 produced no PR.
 It stopped correctly: its spec asks for behaviour that an existing test (`test_query_cache_documents_are_shared_with_cache`)
 pins as documented contract, so no implementation could pass the full suite. The stop reason in `test_report.md`
 quotes that test. The hidden I5 tests encode my reading of a vague issue, which the maintainers' own test contradicts.
@@ -202,8 +212,14 @@ Stopping and handing the contract question to a human is the right outcome, reac
 attempts (see Hindsight).
 
 **What the reviewer caught, and where it was wrong.** On the seeded PRs (E1), the full reviewer identified 3 of 4
-defects. It missed the approach-level S1 and never rejected the correct S4. In the pipeline, all four PRs were correct
-(hidden tests 16/16), so every `changes_requested` there was a **false positive**: twice on I1. (a) Run 44921520773:
+defects (2/4 with a valid verdict, and S5's label is contested, see E1). It missed the approach-level S1 and never
+rejected the correct S4. **In the pipeline it missed spec drift on PR #13.** The I3 issue asks only for
+`between()`. The Analyst added an acceptance criterion for `where('stats.score')` that the issue never asked for, and the Builder made
+`where()` split keys on dots. That breaks existing users of literal dotted keys:
+`db.insert({'a.b': 1}); db.search(where('a.b') == 1)` returns 1 document on base and **0 on PR #13**. The reviewer
+(on the degraded fallback model) approved it. This is exactly the spec drift that ADR-008 says a reviewer without the
+spec should catch; the hidden tests did not cover it. The other three PRs were correct, so every `changes_requested`
+in the pipeline was a **false positive**: twice on I1. (a) Run 44921520773:
 "`frozenset` removes duplicate sub-query hashes", a property of code the PR did not touch. (b) Fresh run: a reviewer
 running on the *degraded* fallback model claimed `__or__` "still uses 'and'" at `queries.py:131`, reading the diff's
 removed line as current code. That citation passed ADR-012's grounding because line 131 exists: **grounding checks
@@ -264,6 +280,13 @@ fallback away from a model with a different daily pool.
    because they never reach its VM, and agents have no network or credentials. But text can still flow through
    allowed channels: an injection in the issue can shape the spec the Builder reads, and the reviewer reads the raw
    issue too. The quarantine limits the *capability* of an injected instruction, not its *influence*.
+7. **The demo video shows the aftermath of a run, not a live run.** `demo.mp4` walks through a completed real run
+   ([issue #1, run 44924437059](https://github.com/moonIsHere11/tinydb-autose/actions/runs/44924437059)): from the
+   issue page and its run ledger, through the Actions job graph, the stage artifacts and the PR, to the two posted
+   reviews. I did not record a fresh run live for two reasons. The free-tier quota (20 requests/day on most Flash
+   models, ADR-011) was close to exhausted after the experiments. And one issue takes up to about 10 minutes in real
+   time, which would not fit a 5-minute video without cuts. Everything shown is a real execution, but the video
+   does not show the agents working in real time.
 
 \newpage
 
@@ -305,6 +328,6 @@ restarted with *Re-run failed jobs* (attempts are visible on each run page). See
 
 # Appendix B: Repository map
 
-The `README.md` of the submission repository lists the layout. Full ADRs are in `architecture/decisions/` (ADR-006
+The `README.md` of the submission repository lists the layout. `demo.mp4` (no audio) walks through the completed run of issue #1 after the fact (see Limitation 7). Full ADRs are in `architecture/decisions/` (ADR-006
 is kept, marked *Superseded by ADR-011*). The harness and prompts are in `workflow/.autose/`. The issues, hidden
 tests, seeded PRs with ground-truth labels and the variant definitions are in `experiment/`.

@@ -13,7 +13,7 @@ sandbox. A defect counts as *identified* only if a finding names the actual defe
 | S3 #8 (code: exclusive bounds) | exact defect with probe (6 cmds), but **no `verdict:` line** → `invalid` | changes requested for the **wrong reason** ("missing unit tests") |
 | S4 #9 (correct control) | approve (3 cmds); first attempt approved with 0 cmds → rejected by gate | approve |
 | S5 #10 (code: shallow copy, nested leak) | changes requested, exact defect, but evidence **hollow** (only ran pytest) | approve (ran pytest) |
-| **Defects identified** | **3/4** (2/4 with a valid verdict) | **0/4** |
+| **Defects identified** | **3/4 named; 2/4 with a valid verdict** (S5 label contested) | **0/4** |
 | False rejections (S4) | 0/1 | 0/1 |
 | Mean commands executed | 3.2 | 0.4 |
 
@@ -24,6 +24,15 @@ and it **approved**, missing the nested-copy defect that the primary model had f
 (nothing ungrounded was kept), but the outcome was decided by the *model*. That is a confound for ADR-012, and
 direct evidence for ADR-011's claim that reviewer strength, not just reviewer independence, is what catches subtle
 defects.
+
+*Caveats on E1.* (1) The variants differ in **five** factors at once (model, inputs including a PR description that
+falsely claims "all existing tests pass", prompt, adversarial mandate, evidence gate), not one, despite `variants.md`'s
+intent; E1 measures the *bundle* of ADR-008 choices, not independence alone. (2) The full reviewer prompt names
+probe areas (query hashes, middleware write counting, nested fields) that overlap the seeded defect classes.
+(3) **S5's label is contested:** the upstream test `test_query_cache_documents_are_shared_with_cache` pins nested
+sharing as documented behaviour (the same test that made I5 stop), so "nested mutation leaks" is arguably the contract,
+not a defect. Counting S5 as not-a-defect, the full reviewer's tally is 2/3 named, 1/3 with a valid verdict.
+Under the final ADR-012 system (S5 re-test) the result is S2 caught, S3 no valid verdict, S1 and S5 missed.
 
 *Reading.* Independence plus the adversarial mandate made the difference between finding defects and rubber-stamping:
 the naive reviewer approved a PR whose own branch fails the existing suite, on the author's word that "all existing

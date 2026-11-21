@@ -97,7 +97,7 @@ def main(fork: Path):
                      "issue_kind": ISSUE_KIND.get(num, ""), "seeded": SEEDED.get(int(pr), "") if pr.isdigit() else "",
                      "pr": pr, "requirements": stages.get("requirements"), "design": stages.get("design"),
                      "implementation": stages.get("implementation"), "testing": stages.get("testing"),
-                     "stopped_at": st0.get("stopped_at") or "", "release": ran.get("ship_0"),
+                     "stopped_at": st0.get("stopped_at") or "", "release": ran.get("ship_0") if pr else "not_released",
                      "review_1": (rv["review-1"] or {}).get("verdict", ""), "review_1_findings": len((rv["review-1"] or {}).get("findings", [])),
                      "review_1_commands": len((rv["review-1"] or {}).get("runs", [])),
                      "rework_entered_at": st1.get("entered_at", ""), "review_2": (rv["review-2"] or {}).get("verdict", ""),

@@ -33,11 +33,15 @@ and the reviewer's fresh context are structural. Every stage check is code; the 
 
 ## Results at a glance
 - **7 pipeline runs + 13 review-only runs**, all real and linked in [`results/runs.md`](results/runs.md).
-- 4/5 issues produced a PR. **Hidden acceptance tests 16/16** on those PRs. The vague issue (I5) **stopped
+- 4/5 issues produced a PR. **Hidden acceptance tests 16/16** on those PRs (PR #13 nevertheless has spec drift, see below). The vague issue (I5) **stopped
   correctly** before release: its request contradicts an existing test that pins documented behaviour.
 - The full DAG (review → rework → second review) ran for real on issue #1.
-- **E1 (reviewer independence):** the full reviewer identified 3/4 seeded defects. The naive reviewer identified 0/4
-  and approved a PR whose own branch fails the existing suite. Both approved the correct control PR.
+- **E1 (reviewer independence):** the full reviewer named 3/4 seeded defects, **2/4 with a valid verdict**; in the
+  ADR-012 re-test of S5 (on a fallback model) it missed. The naive reviewer identified 0/4 and approved a PR whose own
+  branch fails the existing suite. Both approved the correct control PR. Caveats: the variants differ in several
+  factors at once, and S5's label is contested by an upstream contract test.
+- **Reviewer miss in the pipeline:** PR #13 (I3) passes the hidden tests but adds an unrequested, breaking change to
+  `where()` (dotted keys); the reviewer approved it.
 - **E2 (red/green gate):** a negative result. It never fired in live runs. The one vacuous test came in through its
   `[regression-only]` exemption.
 - ADRs changed by evidence: ADR-006 → **ADR-011** (models), ADR-008 → **ADR-012** (grounded evidence), and
