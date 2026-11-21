@@ -8,7 +8,7 @@
 | **Workflow** | [`.github/workflows/autose.yml`](https://github.com/moonIsHere11/tinydb-autose/blob/master/.github/workflows/autose.yml) (copy in `workflow/`) |
 | **Models** | Workers (Analyst, Builder, Tester): `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` → `gemma-4-31b-it` fallback. Reviewer: `gemini-3-flash-preview` → `gemini-3.5-flash`. See ADR-006 (superseded) and ADR-011. |
 | **Cost** | Free-tier Gemini API key with billing disabled = hard $0 cap. Token totals in `results/runs.md`. |
-| **Report / demo** | `report.pdf` · demo video: see link below |
+| **Report / demo** | [`report.pdf`](report.pdf) · demo video: **DEMO_LINK_TODO** |
 
 ## How to trigger
 A user with write access to the fork either
@@ -30,6 +30,18 @@ Control flow is a code state machine inside an **unrolled, bounded Actions DAG**
 (`gate → build → ship_0 → review_1 → rework_1 → ship_1 → review_2 → finalize`), so the two-round review limit
 and the reviewer's fresh context are structural. Every stage check is code; the testing check is
 **red/green**: each acceptance criterion's test must fail on the base commit and pass on the head.
+
+## Results at a glance
+- **7 pipeline runs + 13 review-only runs**, all real and linked in [`results/runs.md`](results/runs.md).
+- 4/5 issues produced a PR. **Hidden acceptance tests 16/16** on those PRs. The vague issue (I5) **stopped
+  correctly** before release: its request contradicts an existing test that pins documented behaviour.
+- The full DAG (review → rework → second review) ran for real on issue #1.
+- **E1 (reviewer independence):** the full reviewer identified 3/4 seeded defects. The naive reviewer identified 0/4
+  and approved a PR whose own branch fails the existing suite. Both approved the correct control PR.
+- **E2 (red/green gate):** a negative result. It never fired in live runs. The one vacuous test came in through its
+  `[regression-only]` exemption.
+- ADRs changed by evidence: ADR-006 → **ADR-011** (models), ADR-008 → **ADR-012** (grounded evidence), and
+  amendments to ADR-003 and ADR-004.
 
 ## Repository layout
 ```

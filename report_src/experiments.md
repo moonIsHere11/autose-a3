@@ -17,7 +17,13 @@ sandbox. A defect counts as *identified* only if a finding names the actual defe
 | False rejections (S4) | 0/1 | 0/1 |
 | Mean commands executed | 3.2 | 0.4 |
 
-{{S5_RETEST}}
+*Re-test of S5 under ADR-012* ([run 44924483558](https://github.com/moonIsHere11/tinydb-autose/actions/runs/44924483558)):
+the primary reviewer model was rate-limited at that moment, so **every call was served by the fallback
+`gemini-flash-lite-latest`** (logged in `usage.json`). It ran 7 commands, but its probes only mutated top-level keys,
+and it **approved**, missing the nested-copy defect that the primary model had found. ADR-012's gate behaved correctly
+(nothing ungrounded was kept), but the outcome was decided by the *model*. That is a confound for ADR-012, and
+direct evidence for ADR-011's claim that reviewer strength, not just reviewer independence, is what catches subtle
+defects.
 
 *Reading.* Independence plus the adversarial mandate made the difference between finding defects and rubber-stamping:
 the naive reviewer approved a PR whose own branch fails the existing suite, on the author's word that "all existing

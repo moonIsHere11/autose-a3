@@ -43,6 +43,9 @@ def main():
         fills["{{" + k + "}}"] = section(k.lower())
     for k, v in fills.items():
         t = t.replace(k, v)
+    for a, b in {"✓": "(ok)", "✗": "(x)", "→": "->", "≤": "$\\le$", "≥": "$\\ge$", "…": "...",
+                 "×": "x", "–": "--", "—": "---", "‘": "'", "’": "'", "“": '"', "”": '"', "🛑": "", "✅": "", "⏳": ""}.items():
+        t = t.replace(a, b)
     out = HERE / "report.filled.md"
     out.write_text(t)
     subprocess.run(["pandoc", str(out), "-o", str(ROOT / "report.pdf"), "--pdf-engine=pdflatex",
