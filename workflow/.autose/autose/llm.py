@@ -25,7 +25,9 @@ ROLE_MODELS = {
     "analyst": WORKERS,
     "builder": WORKERS,
     "tester": WORKERS,
-    "reviewer": ["gemini-3-flash-preview", "gemini-3.5-flash"],
+    # 3.5-flash / 3.8-flash have a 20 requests/day free-tier cap (measured), so they are not useful fallbacks;
+    # last resort is a lite model from a different generation than the workers' primary (logged per call).
+    "reviewer": ["gemini-3-flash-preview", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"],
     # experiment E1 variant: naive reviewer on the workers' model
     "reviewer_naive": WORKERS,
 }
@@ -82,15 +84,27 @@ class LLM:
             contents.append({"role": m["role"], "parts": [{"text": text}]})
         body = {"contents": contents, "generationConfig": {"temperature": 0.2, "maxOutputTokens": 8192}}
         last_err = None
+        for rnd in range(4):  # whole-chain retry rounds: every model can be 503 at the same moment
+            if rnd:
+                print(f"[llm] all models unavailable, chain retry {rnd} in {30 * rnd}s", flush=True)
+                time.sleep(30 * rnd)
+            got = self._try_chain(body)
+            if isinstance(got, tuple):
+                return got
+            last_err = got
+        raise RuntimeError(f"all models failed for role {self.role}: {last_err}")
+
+    def _try_chain(self, body: dict):
+        last_err = None
         for model in self.models:
-            for attempt in range(6):
+            for attempt in range(7):
                 try:
                     d = self._post(model, body)
                 except urllib.error.HTTPError as e:
                     msg = e.read().decode(errors="replace")[:2000]
                     last_err = f"{model}: HTTP {e.code} {msg}"
                     if e.code == 429:  # rate limit: honour retryDelay, same model; daily quota -> next model
-                        if "PerDay" in msg or attempt >= 4:
+                        if "PerDay" in msg or attempt >= 5:  # per-minute: wait it out on this model
                             break
                         print(f"[llm] 429 on {model}, backing off", flush=True)
                         time.sleep(_retry_delay(msg, 10 * 2 ** attempt) + random.random() * 2)
@@ -122,4 +136,4 @@ class LLM:
                     time.sleep(3)
                     continue
                 return text, model
-        raise RuntimeError(f"all models failed for role {self.role}: {last_err}")
+        return last_err

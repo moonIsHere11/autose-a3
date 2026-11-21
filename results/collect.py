@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -59,8 +60,17 @@ def main(fork: Path):
         if ran.get("gate") != "success":
             continue
         with tempfile.TemporaryDirectory() as td:
-            subprocess.run(["gh", "run", "download", str(rid), "-R", REPO, "-D", td], capture_output=True)
             t = Path(td)
+            arts = json.loads(gh("api", f"repos/{REPO}/actions/runs/{rid}/artifacts?per_page=100"))["artifacts"]
+            newest = {}
+            for art in sorted(arts, key=lambda x: x["created_at"]):
+                base = re.sub(r"-a\d+$", "", art["name"])  # review-1-a2 -> review-1 (ADR-004 attempt suffix)
+                newest[base] = art
+            for base, art in newest.items():
+                z = t / f"{base}.zip"
+                with z.open("wb") as fh:
+                    subprocess.run(["gh", "api", f"repos/{REPO}/actions/artifacts/{art['id']}/zip"], stdout=fh, check=True)
+                subprocess.run(["unzip", "-q", "-o", str(z), "-d", str(t / base)], check=False)
             issue = jget(t / "issue" / "issue.json")
             st0, st1 = jget(t / "work-0" / "status.json"), jget(t / "work-1" / "status.json")
             usage = [jget(p) for p in t.glob("*/usage.json")] + [jget(p).get("usage", {}) for p in t.glob("review-*/review.json")]

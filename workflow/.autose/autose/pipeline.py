@@ -169,6 +169,9 @@ def do_build_and_test(r: Run, feedback: str = "", allow_redesign: bool = True) -
                 need_tests = False
             ok, rep, info = gates.gate_tests(r.repo, r.base, r.test_file, r.acs, r.out / "work")
             r.log("testing", rep[:300])
+            with (r.out / "test_evals.jsonl").open("a") as fh:  # every evaluation, for the E2 replay
+                fh.write(json.dumps({"ok": ok, "report": rep, "table": info.get("table", ""),
+                                     "test_attempt": test_attempts, "impl_attempt": impl_attempts}) + "\n")
             report = (f"# Test report: issue #{r.issue['number']}\n\n**Stage check (code):** {rep}\n\n## Red/green per acceptance criterion\n"
                       f"{info.get('table', '')}\n\n## Full suite on head\n```\n{info.get('suite', '')}\n```\n")
             (r.out / "test_report.md").write_text(report)
@@ -265,6 +268,9 @@ def parse_findings(text: str) -> list[dict]:
 def _review_guard(args: dict, tb) -> str | None:
     """Evidence gate enforced inside the loop: no approval before the reviewer has executed anything."""
     v = (args.get("verdict") or "").lower()
+    if not any(k in v for k in ("approve", "changes_requested", "changes requested")):
+        return ("your finish has no `verdict:` header line. Call finish again with a line "
+                "`verdict: approve` or `verdict: changes_requested`, plus the summary and findings sections.")
     if "approve" in v and not tb.runs:
         return ("you have not executed any command. Before approving, run the test suite and at least one probe "
                 "script in /tmp that tries to break the change, then decide again.")
@@ -299,7 +305,7 @@ def cmd_review(a):
     if a.variant == "naive":
         verdict, kept, note = (raw["verdict"].strip().lower().replace(" ", "_"), raw["findings"], "naive variant: no evidence gate")
     else:
-        verdict, kept, note = gates.gate_review(raw, tb.runs)
+        verdict, kept, note = gates.gate_review(raw, tb.runs, repo)
     rows = "\n".join(f"| {i} | {f['category']} | `{f.get('file', '')}` | {f['issue']} | {f.get('evidence', '')[:400]} |" for i, f in enumerate(kept, 1))
     md = (f"## AutoSE independent review (round {a.round}, {a.variant} reviewer)\n\n**Verdict:** `{verdict}`"
           f"{'  — ' + note if note else ''}\n\n{raw['summary']}\n\n"

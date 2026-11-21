@@ -15,3 +15,4 @@ Nygard format. Superseded ADRs stay in place and point to their replacement.
 | [009](ADR-009.md) | D9 Safety and failures | Quarantine, no credentials in sandbox, budgets, structural bounds | Prompt-only defence | Injection can at worst produce a bad diff on a branch | Accepted |
 | [010](ADR-010.md) | D10 Triggers | Label or `/autose` by write-permission users; per-issue queued concurrency | `issues: opened` for everyone | Only people who could push can spend the budget | Accepted |
 | [011](ADR-011.md) | D6 Models (revised) | gemini-3.5-flash-lite workers (Gemma fallback), gemini-3-flash-preview reviewer | Keep Gemma workers with longer timeouts | Measured 503s and ~20 s/call made runs infeasible | Accepted |
+| [012](ADR-012.md) | D8/D7 Evidence gate (revised) | Evidence must match executed output or a real file:line; verdict + evidence enforced in-loop | Non-empty evidence text, checked after finish | E1: hollow evidence on S5, missing verdict on S3 | Accepted |

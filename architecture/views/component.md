@@ -1,7 +1,7 @@
 # Component view
 
-Target: fork of `msiemens/tinydb` pinned at `edff96a` (`<FORK_URL>`). The workflow
-`.github/workflows/autose.yml` and the harness under `.autose/` live on the fork's `main`.
+Target: fork of `msiemens/tinydb` pinned at `edff96a` (https://github.com/moonIsHere11/tinydb-autose). The workflow
+`.github/workflows/autose.yml` and the harness under `.autose/` live on the fork's default branch `master`.
 Hidden acceptance tests never live in the fork.
 
 ```mermaid
@@ -29,14 +29,14 @@ flowchart TB
 
   subgraph H[Harness process: holds GEMINI_API_KEY, never a GitHub token]
     SM[State machine + gates<br/>code decides every transition]
-    AN[Analyst<br/>stages 1-2<br/>read / ls / grep]
+    AN[Analyst<br/>stages 1-2<br/>list / read / grep]
     BU[Builder<br/>stage 3<br/>+ write tinydb/ + run]
     TE[Tester<br/>stage 4<br/>+ write tests/autose/ + run]
-    RV[Reviewer<br/>stage 6<br/>read / ls / grep / run]
+    RV[Reviewer<br/>stage 6<br/>list / read / grep / run]
   end
 
-  SB[[Sandbox: docker run --network none<br/>no key, no token, cpu/mem/pid limits, 120 s]]
-  GEM[(Gemini API<br/>gemma-4-31b-it workers<br/>gemini-3-flash-preview reviewer)]
+  SB[[Sandbox: docker run --network none<br/>no key, no token, cpu/mem/pid limits, 150 s<br/>repo rw (builder/tester) or ro (reviewer), /scratch]]
+  GEM[(Gemini API<br/>workers: gemini-3.5-flash-lite (Gemma 4 fallback)<br/>reviewer: gemini-3-flash-preview)]
 
   ISSUE --> GATE
   BUILD --> SM
@@ -61,12 +61,12 @@ review 1 approves.
 
 | Job | GITHUB_TOKEN permissions | LLM role(s) | Agent tools | Write scope | Sees raw issue |
 |---|---|---|---|---|---|
-| gate | issues: write | none | none | none | parses it (code only) |
-| build | contents: read | Analyst, Builder, Tester | Analyst: read, ls, grep. Builder/Tester: read, ls, grep, write, replace, run | Builder: `tinydb/`. Tester: `tests/autose/` | Analyst only |
-| ship_0 / ship_1 | contents: write, pull-requests: write, issues: write | none | none | branch `autose/issue-N` | no |
-| review_1 / review_2 | contents: read, pull-requests: write (harness posts after agent exits) | Reviewer | read, ls, grep, run (repo mounted read-only, scratch `/tmp`) | none | yes (plus diff + repo at PR head) |
+| gate | contents: read, issues: write, pull-requests: read | none | none | none | parses it (code only) |
+| build | contents: read | Analyst, Builder, Tester | Analyst: list, read, grep, finish. Builder/Tester: + write, replace, run | Builder: `tinydb/`. Tester: `tests/autose/` | Analyst only |
+| ship_0 / ship_1 | contents: write, pull-requests: write, issues: write, statuses: write | none | none | branch `autose/issue-N` | no |
+| review_1 / review_2 | contents: read, pull-requests: write, issues: write (harness posts after agent exits) | Reviewer | list, read, grep, run (repo mounted read-only, persistent `/scratch`) | none | yes (plus diff + repo at PR head) |
 | rework_1 | contents: read | Analyst (approach) or Builder (code), then Tester | as in build | as in build | Analyst only |
-| finalize | issues: write, pull-requests: write | none | none | none | no |
+| finalize | contents: read, issues: write | none | none | none | no |
 
 Workflow-level `permissions: {}`. Agent jobs check out with `persist-credentials: false`.
-No job has a merge path.
+No job has a merge path. The reviewer job overwrites `.autose/` with the default branch's copy before running, so a PR under review cannot change the reviewer's own prompt or harness.
