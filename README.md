@@ -6,7 +6,7 @@
 | **Upstream + pinned commit** | `msiemens/tinydb` @ **`edff96a`** (`edff96aeb2616402e9489d46e90a592c05565621`) |
 | **Experiment seeding commit** | `8f8e5e9` on the fork: re-injects the two A2 bugs used by issues #1 and #2 (documented in `experiment/`) |
 | **Workflow** | [`.github/workflows/autose.yml`](https://github.com/moonIsHere11/tinydb-autose/blob/master/.github/workflows/autose.yml) (copy in `workflow/`) |
-| **Models** | Workers (Analyst, Builder, Tester): `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` → `gemma-4-31b-it` fallback. Reviewer: `gemini-3-flash-preview` → `gemini-3.5-flash`. See ADR-006 (superseded) and ADR-011. |
+| **Models** | Workers (Analyst, Builder, Tester): `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` → `gemma-4-31b-it` fallback. Reviewer: `gemini-3-flash-preview` → `gemini-flash-lite-latest` → `gemini-3.1-flash-lite` (a fallback review is labelled **degraded** on the PR). See ADR-006 (superseded) and ADR-011. |
 | **Cost** | Free-tier Gemini API key with billing disabled = hard $0 cap. Token totals in `results/runs.md`. |
 | **Report / demo** | [`report.pdf`](report.pdf) · demo video: **DEMO_LINK_TODO** |
 
@@ -48,7 +48,7 @@ and the reviewer's fresh context are structural. Every stage check is code; the 
 README.md                 this file
 report.pdf                the report (≤ 8 pages + appendices)
 architecture/views/       component view, sequence view (real run), stage map
-architecture/decisions/   ADR-001 … ADR-011 (ADR-006 superseded by ADR-011), index in README.md
+architecture/decisions/   ADR-001 … ADR-012 (ADR-006 superseded by ADR-011; ADR-012 amends ADR-008), index in README.md
 workflow/                 copy of .github/workflows/ + .autose/ (harness, prompts, sandbox) from the fork
 experiment/issues/        the 5 issue texts (2 bugs, 2 features, 1 vague)
 experiment/hidden_tests/  hidden acceptance tests (never in the fork)
