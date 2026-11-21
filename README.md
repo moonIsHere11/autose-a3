@@ -8,7 +8,7 @@
 | **Workflow** | [`.github/workflows/autose.yml`](https://github.com/moonIsHere11/tinydb-autose/blob/master/.github/workflows/autose.yml) (copy in `workflow/`) |
 | **Models** | Workers (Analyst, Builder, Tester): `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` → `gemma-4-31b-it` fallback. Reviewer: `gemini-3-flash-preview` → `gemini-flash-lite-latest` → `gemini-3.1-flash-lite` (a fallback review is labelled **degraded** on the PR). See ADR-006 (superseded) and ADR-011. |
 | **Cost** | Free-tier Gemini API key with billing disabled = hard $0 cap. Token totals in `results/runs.md`. |
-| **Report / demo** | [`report.pdf`](report.pdf) · demo video: **DEMO_LINK_TODO** |
+| **Report / demo** | [`report.pdf`](report.pdf) · demo video: [`demo.mp4`](demo.mp4) (no audio; walkthrough of the completed run of issue #1) |
 
 ## How to trigger
 A user with write access to the fork either

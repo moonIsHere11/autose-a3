@@ -21,3 +21,10 @@
    because they never reach its VM, and agents have no network or credentials. But text can still flow through
    allowed channels: an injection in the issue can shape the spec the Builder reads, and the reviewer reads the raw
    issue too. The quarantine limits the *capability* of an injected instruction, not its *influence*.
+7. **The demo video shows the aftermath of a run, not a live run.** `demo.mp4` walks through a completed real run
+   ([issue #1, run 44924437059](https://github.com/moonIsHere11/tinydb-autose/actions/runs/44924437059)): from the
+   issue page and its run ledger, through the Actions job graph, the stage artifacts and the PR, to the two posted
+   reviews. I did not record a fresh run live for two reasons. The free-tier quota (20 requests/day on most Flash
+   models, ADR-011) was close to exhausted after the experiments. And one issue takes up to about 10 minutes in real
+   time, which would not fit a 5-minute video without cuts. Everything shown is a real execution, but the video
+   does not show the agents working in real time.

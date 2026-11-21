@@ -102,6 +102,6 @@ repeated set-up (~40 s each), and a third review round is impossible by construc
 
 # Appendix B: Repository map
 
-The `README.md` of the submission repository lists the layout. Full ADRs are in `architecture/decisions/` (ADR-006
+The `README.md` of the submission repository lists the layout. `demo.mp4` (no audio) walks through the completed run of issue #1 after the fact (see Limitation 7). Full ADRs are in `architecture/decisions/` (ADR-006
 is kept, marked *Superseded by ADR-011*). The harness and prompts are in `workflow/.autose/`. The issues, hidden
 tests, seeded PRs with ground-truth labels and the variant definitions are in `experiment/`.
